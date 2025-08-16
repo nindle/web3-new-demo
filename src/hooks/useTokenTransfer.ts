@@ -50,17 +50,36 @@ export function useTokenTransfer(): any {
   const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount()
   const appkitAccount = useAppKitAccount()
 
+  // 检测是否为移动端
+  const isMobile = computed(() => {
+    if (typeof window === 'undefined') return false
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  })
+
   // 统一的连接状态和地址 - 移动端优先使用 AppKit
   const isConnected = computed(() => {
     const appkitConnected = appkitAccount.value?.isConnected || false
     const wagmiConnected = wagmiIsConnected.value || false
-    return appkitConnected || wagmiConnected
+
+    // 移动端主要依赖 AppKit 状态
+    if (isMobile.value) {
+      return appkitConnected
+    }
+
+    // PC端优先使用 Wagmi 状态
+    return wagmiConnected || appkitConnected
   })
 
   const userAddress = computed(() => {
     const appkitAddr = appkitAccount.value?.address
     const wagmiAddr = wagmiAddress.value
-    return (appkitAddr || wagmiAddr) as `0x${string}` | undefined
+
+    // 移动端优先使用 AppKit 地址
+    if (isMobile.value && appkitAddr) {
+      return appkitAddr as `0x${string}`
+    }
+
+    return (wagmiAddr || appkitAddr) as `0x${string}` | undefined
   })
 
   // 代币转账合约写入
@@ -227,6 +246,15 @@ export function useTokenTransfer(): any {
 
   // 代币直接转账函数
   const transferToken = async (to: string, amount: string) => {
+    // 检查连接状态
+    if (!isConnected.value) {
+      const connectMsg = isMobile.value
+        ? '请通过 AppKit 连接钱包（移动端模式）'
+        : '请连接钱包'
+      error.value = connectMsg
+      return false
+    }
+
     const validationError = validateTransfer(amount, to)
     if (validationError) {
       error.value = validationError
@@ -238,6 +266,15 @@ export function useTokenTransfer(): any {
       isLoading.value = true
       txStatus.value = 'pending'
 
+      console.log('🚀 Starting token transfer:', {
+        isMobile: isMobile.value,
+        appkitConnected: appkitAccount.value?.isConnected,
+        wagmiConnected: wagmiIsConnected.value,
+        userAddress: userAddress.value,
+        amount,
+        to
+      })
+
       const parsedAmount = parseUnits(amount, decimals.value)
 
       await writeContract({
@@ -247,9 +284,14 @@ export function useTokenTransfer(): any {
         args: [to as `0x${string}`, parsedAmount]
       } as any)
 
+      console.log('✅ Token transfer initiated successfully')
       return true
     } catch (err: any) {
-      error.value = err?.message || '转账失败'
+      console.error('❌ Token transfer failed:', err)
+      const errorMsg = isMobile.value && err.message?.includes('wagmi')
+        ? '移动端转账失败，请尝试刷新页面重新连接'
+        : err?.message || '转账失败'
+      error.value = errorMsg
       txStatus.value = 'error'
       return false
     } finally {
@@ -346,6 +388,7 @@ export function useTokenTransfer(): any {
     // 账户信息
     userAddress,
     isConnected,
+    isMobile,
 
     // 代币信息
     tokenName,

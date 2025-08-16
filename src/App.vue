@@ -9,7 +9,15 @@
         <strong>调试信息:</strong><br>
         设备类型: {{ isMobile ? '移动端' : 'PC端' }}<br>
         AppKit 连接: {{ appkitAccount?.isConnected }} | 地址: {{ appkitAccount?.address?.slice(0, 10) }}...<br>
-        Wagmi 连接: {{ wagmiIsConnected }} | 地址: {{ wagmiAddress?.slice(0, 10) }}...
+        Wagmi 连接: {{ wagmiIsConnected }} | 地址: {{ wagmiAddress?.slice(0, 10) }}...<br>
+        <span v-if="isMobile && appkitAccount?.isConnected && !wagmiIsConnected"
+              style="color: orange;">
+          📱 移动端模式：使用 AppKit 状态（Wagmi 同步失败属正常现象）
+        </span>
+        <span v-if="!isMobile && wagmiIsConnected"
+              style="color: green;">
+          💻 PC端模式：Wagmi 连接正常
+        </span>
       </div>
 
       <appkit-button v-if="isAppkitReady" />
@@ -120,13 +128,63 @@ onMounted(async () => {
         // 等待一小段时间确保状态完全更新
         await new Promise(resolve => setTimeout(resolve, 500))
 
-        // 尝试同步到 Wagmi
+        // 尝试同步到 Wagmi - 改进连接器选择逻辑
         if (connectors && connectors.length > 0 && !wagmiIsConnected.value) {
-          const connector = connectors.find((c: any) => c.name.includes('WalletConnect')) || connectors[0]
-          console.log('🔄 Syncing to Wagmi with connector:', connector?.name)
+          console.log('🔍 Available connectors:', connectors.map((c: any) => c.name))
 
-          await connectAsync({ connector })
-          console.log('✅ Wagmi sync completed')
+          // 更智能的连接器选择策略
+          let targetConnector = null
+
+          // 1. 优先寻找 WalletConnect 相关连接器
+          targetConnector = connectors.find((c: any) =>
+            c.name.toLowerCase().includes('walletconnect') ||
+            c.name.toLowerCase().includes('wallet connect') ||
+            c.id?.toLowerCase().includes('walletconnect')
+          )
+
+          // 2. 如果没找到，寻找 AppKit 相关连接器
+          if (!targetConnector) {
+            targetConnector = connectors.find((c: any) =>
+              c.name.toLowerCase().includes('appkit') ||
+              c.name.toLowerCase().includes('reown')
+            )
+          }
+
+          // 3. 最后兜底使用第一个可用连接器
+          if (!targetConnector && connectors.length > 0) {
+            targetConnector = connectors[0]
+          }
+
+          if (targetConnector) {
+            console.log('🔄 Syncing to Wagmi with connector:', {
+              name: targetConnector.name,
+              id: targetConnector.id,
+              type: targetConnector.type
+            })
+
+            try {
+              await connectAsync({ connector: targetConnector })
+              console.log('✅ Wagmi sync completed successfully')
+            } catch (syncError: any) {
+              console.warn('⚠️ Wagmi sync failed, trying alternative approach:', syncError.message)
+
+              // 尝试其他连接器
+              for (const altConnector of connectors) {
+                if (altConnector !== targetConnector) {
+                  try {
+                    console.log('🔄 Trying alternative connector:', altConnector.name)
+                    await connectAsync({ connector: altConnector })
+                    console.log('✅ Alternative connector sync successful')
+                    break
+                  } catch (altError) {
+                    console.log('❌ Alternative connector failed:', altError)
+                  }
+                }
+              }
+            }
+          } else {
+            console.warn('⚠️ No suitable connector found for Wagmi sync')
+          }
         }
       } catch (error) {
         console.warn('⚠️ Failed to sync to Wagmi (this is OK for mobile):', error)
