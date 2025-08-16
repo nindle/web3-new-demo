@@ -44,25 +44,7 @@ import InfoList from "./components/InfoList.vue";
 import TokenTransfer from "./components/TokenTransfer.vue";
 
 // Initialize AppKit
-const appkit =  createAppKit({
-  adapters: [wagmiAdapter],
-  networks,
-  projectId,
-  themeMode: 'light',
-  features: {
-    connectMethodsOrder: ['wallet'],
-    analytics: true, // Optional - defaults to your Cloud configuration
-  },
-  metadata: {
-    name: 'AppKit Vue Example',
-    description: 'AppKit Vue Example',
-    url: 'https://nindle.github.io/web3-new-demo/',
-    icons: ['https://avatars.githubusercontent.com/u/179229932?s=200&v=4']
-  },
-  themeVariables: {
-    '--w3m-accent': '#000000',
-  }
-})
+
 
 const isAppkitReady = ref(false)
 
@@ -100,18 +82,40 @@ const userAddress = computed(() => {
   return address
 })
 
-if (appkit) {
-  setTimeout(() => {
-    isAppkitReady.value = true
-  }, 1000)
-}
+
 
 // 监听 AppKit 状态变化和同步
 onMounted(async () => {
+
+  const appkit =  createAppKit({
+    adapters: [wagmiAdapter],
+    networks,
+    projectId,
+    themeMode: 'light',
+    features: {
+      connectMethodsOrder: ['wallet'],
+      analytics: true, // Optional - defaults to your Cloud configuration
+    },
+    metadata: {
+      name: 'AppKit Vue Example',
+      description: 'AppKit Vue Example',
+      url: 'https://nindle.github.io/web3-new-demo/',
+      icons: ['https://avatars.githubusercontent.com/u/179229932?s=200&v=4']
+    },
+    themeVariables: {
+      '--w3m-accent': '#000000',
+    }
+  })
   console.log('🚀 App mounted, setting up connection sync')
 
   // 等待 AppKit 完全初始化
   await nextTick()
+
+  if (appkit) {
+    setTimeout(() => {
+      isAppkitReady.value = true
+    }, 1000)
+  }
 
   // 监听 AppKit 账户状态变化
   watch(appkitAccount, async (newAccount, oldAccount) => {
