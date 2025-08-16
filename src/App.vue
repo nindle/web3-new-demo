@@ -23,6 +23,9 @@
       <appkit-button v-if="isAppkitReady" />
       <ActionButtonList v-if="isAppkitReady" />
 
+      <!-- AppKit 余额组件 -->
+      <AppKitBalance v-if="isAppkitReady" />
+
       <!-- 代币转账组件 -->
       <TokenTransfer v-if="isAppkitReady" />
 
@@ -42,6 +45,7 @@ import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import ActionButtonList from "./components/ActionButton.vue";
 import InfoList from "./components/InfoList.vue";
 import TokenTransfer from "./components/TokenTransfer.vue";
+import AppKitBalance from "./components/AppKitBalance.vue";
 
 // Initialize AppKit
 
