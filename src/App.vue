@@ -3,6 +3,8 @@
    <div class="pages">
       <img src="/reown.svg" alt="Reown" width="150" height="150" />
       <h1> Web3 代币转账系统 demo </h1>
+      <p>用户地址: {{ userAddress }}</p>
+      <p>是否连接: {{ isConnected }}</p>
 
       <appkit-button v-if="isAppkitReady" />
       <ActionButtonList v-if="isAppkitReady" />
@@ -19,6 +21,7 @@
 import {
   createAppKit,
 } from '@reown/appkit/vue'
+import {  useAccount  } from '@wagmi/vue'
 import {wagmiAdapter , networks, projectId } from './config/index'
 import { ref } from 'vue'
 import ActionButtonList from "./components/ActionButton.vue";
@@ -54,4 +57,5 @@ if (appkit) {
 
 }
 
+const { address: userAddress, isConnected } = useAccount()
 </script>
