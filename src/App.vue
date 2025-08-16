@@ -2,37 +2,31 @@
 <template>
    <div class="pages">
       <img src="/reown.svg" alt="Reown" width="150" height="150" />
-      <h1>AppKit wagmi vue Example</h1>
+      <h1> Web3 代币转账系统 demo </h1>
 
-      <appkit-button />
-      <ActionButtonList />
+      <appkit-button v-if="isAppkitReady" />
+      <ActionButtonList v-if="isAppkitReady" />
 
       <!-- 代币转账组件 -->
-      <TokenTransfer />
+      <TokenTransfer v-if="isAppkitReady" />
 
-      <div className="advice">
-        <p>
-          This projectId only works on localhost. <br/>
-          Go to <a href="https://cloud.reown.com" target="_blank" className="link-button" rel="Reown Cloud">Reown Cloud</a> to get your own.
-        </p>
-      </div>
-      <InfoList />
+      <InfoList v-if="isAppkitReady" />
     </div>
 </template>
 
 
-<script>
+<script setup lang="ts">
 import {
   createAppKit,
 } from '@reown/appkit/vue'
 import {wagmiAdapter , networks, projectId } from './config/index'
-
+import { ref } from 'vue'
 import ActionButtonList from "./components/ActionButton.vue";
 import InfoList from "./components/InfoList.vue";
 import TokenTransfer from "./components/TokenTransfer.vue";
 
 // Initialize AppKit
-const appkit = createAppKit({
+const appkit =  createAppKit({
   adapters: [wagmiAdapter],
   networks,
   projectId,
@@ -52,12 +46,12 @@ const appkit = createAppKit({
   }
 })
 
-export default {
-  name: "App",
-  components: {
-    ActionButtonList,
-    InfoList,
-    TokenTransfer
-  },
-};
+const isAppkitReady = ref(false)
+if (appkit) {
+  setTimeout(() => {
+    isAppkitReady.value = true
+  }, 1000)
+
+}
+
 </script>

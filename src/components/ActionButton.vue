@@ -1,24 +1,24 @@
 <template>
     <div>
       <div v-if="accountData.isConnected">
-        <button @click="handleDisconnect">Disconnect</button>
-        <button @click="switchToNetwork">Switch</button>
-        <button @click="handleSignMessage">Sign Message</button>
-        <button @click="handleSendTx">Send a Transaction</button>
+        <button @click="handleDisconnect">断开连接</button>
+        <button @click="switchToNetwork">切换网络</button>
+        <button @click="handleSignMessage">签名消息</button>
+        <button @click="handleSendTx">发送交易</button>
 
-        <div v-if="hash">Transaction Hash: {{ hash }}</div>
+        <div v-if="hash">交易哈希: {{ hash }}</div>
       </div>
-      <button v-else @click="openAppKit">Open</button>
+      <button v-else @click="openAppKit">打开钱包</button>
     </div>
   </template>
-  
+
   <script>
   import { useDisconnect, useAppKit, useAppKitNetwork, useAppKitAccount} from "@reown/appkit/vue";
   import { networks } from "../config/index";
   import { useEstimateGas, useSendTransaction, useSignMessage } from '@wagmi/vue'
   import { parseGwei } from 'viem'
   import { watchEffect } from 'vue';
-  
+
       // test transaction
       const TEST_TX = {
       to: "0x50200216532355Fa9971074Ca352FA706346c04C", // change to your address
@@ -31,12 +31,12 @@
       const { disconnect } = useDisconnect();
       const { open } = useAppKit();
       const networkData = useAppKitNetwork();
-      const accountData = useAppKitAccount() 
+      const accountData = useAppKitAccount()
       const { data: gas } = useEstimateGas({...TEST_TX}); // Wagmi hook to estimate gas
       const { data: hash, sendTransaction,error } = useSendTransaction(); // Wagmi hook to send a transaction
       const { signMessageAsync } = useSignMessage() // Wagmi hook to sign a message
 
-  
+
       const address = accountData.value.address;
       const openAppKit = () => open();
       const switchToNetwork = () => networkData.value.switchNetwork(networks[1]);
@@ -65,7 +65,7 @@
       const handleSignMessage = async () => {
         console.log("sign Message")
         const msg = "Hello Reown AppKit!" // message to sign
-        const sig = await signMessageAsync({ message: msg, account: address}); 
+        const sig = await signMessageAsync({ message: msg, account: address});
         console.log("signed message", sig);
       }
 
@@ -95,4 +95,3 @@
     },
   };
   </script>
-  
