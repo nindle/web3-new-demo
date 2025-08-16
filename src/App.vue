@@ -56,7 +56,7 @@ const appkit =  createAppKit({
   metadata: {
     name: 'AppKit Vue Example',
     description: 'AppKit Vue Example',
-    url: 'https://reown.com/appkit',
+    url: 'https://nindle.github.io/web3-new-demo/',
     icons: ['https://avatars.githubusercontent.com/u/179229932?s=200&v=4']
   },
   themeVariables: {
