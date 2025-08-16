@@ -3,12 +3,20 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # 移除PR触发器，只在main分支部署
+  workflow_dispatch: # 允许手动触发
+
+# 并发控制，确保只有一个部署任务运行
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     permissions:
       contents: read
@@ -30,13 +38,30 @@ jobs:
       with:
         version: 8
 
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
 
     - name: Build
       run: pnpm run build:prod
       env:
         VITE_PROJECT_ID: ${{ secrets.VITE_PROJECT_ID }}
+        NODE_ENV: production
+
+    - name: Add .nojekyll file
+      run: touch ./dist/.nojekyll
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -49,4 +74,3 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
-      if: github.ref == 'refs/heads/main'

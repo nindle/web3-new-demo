@@ -6,7 +6,8 @@ import vue from '@vitejs/plugin-vue'
 // https://vite.dev/config/
 export default defineConfig({
   // GitHub Pages部署需要设置正确的base路径
-  base: process.env.NODE_ENV === 'production' ? '/web3-new-demo/' : '/',
+  // 使用仓库名称作为base路径，确保资源正确加载
+  base: process.env.NODE_ENV === 'production' ? '/demo/' : '/',
   resolve: {
     alias: {
       buffer: 'buffer/'
