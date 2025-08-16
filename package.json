@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:prod": "NODE_ENV=production run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force"
@@ -25,6 +26,7 @@
     "@vitejs/plugin-vue-jsx": "^4.0.1",
     "@vue/tsconfig": "^0.7.0",
     "npm-run-all2": "^8.0.1",
+    "terser": "^5.16.0",
     "typescript": "~5.8.3",
     "vite": "^6.2.0",
     "vue-tsc": "^2.1.6"
