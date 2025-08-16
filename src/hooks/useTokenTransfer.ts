@@ -3,6 +3,7 @@ import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAcc
 import { parseUnits, formatUnits, isAddress } from 'viem'
 import { TOKEN_ABI } from '../contracts/tokenABI'
 import { CONTRACT_ADDRESSES } from '../contracts/addresses'
+import { useAppKitAccount } from '@reown/appkit/vue'
 
 // 扩展的ERC20 ABI，包含更多标准函数
 const ERC20_ABI = [
@@ -45,8 +46,22 @@ export function useTokenTransfer(): any {
   const error = ref<string | null>(null)
   const txStatus = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 
-  // 获取当前账户信息
-  const { address: userAddress, isConnected } = useAccount()
+  // 获取当前账户信息 - 使用 AppKit 和 Wagmi 双重状态
+  const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount()
+  const appkitAccount = useAppKitAccount()
+
+  // 统一的连接状态和地址 - 移动端优先使用 AppKit
+  const isConnected = computed(() => {
+    const appkitConnected = appkitAccount.value?.isConnected || false
+    const wagmiConnected = wagmiIsConnected.value || false
+    return appkitConnected || wagmiConnected
+  })
+
+  const userAddress = computed(() => {
+    const appkitAddr = appkitAccount.value?.address
+    const wagmiAddr = wagmiAddress.value
+    return (appkitAddr || wagmiAddr) as `0x${string}` | undefined
+  })
 
   // 代币转账合约写入
   const {
@@ -94,7 +109,7 @@ export function useTokenTransfer(): any {
     address: CONTRACT_ADDRESSES.TOKEN_ADDRESS as `0x${string}`,
     abi: ERC20_ABI,
     functionName: 'balanceOf',
-    args: userAddress.value ? [userAddress.value] : undefined,
+    args: userAddress.value ? [userAddress.value as `0x${string}`] : undefined,
     query: {
       enabled: !!userAddress.value
     }
@@ -110,7 +125,7 @@ export function useTokenTransfer(): any {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: userAddress.value ? [
-      userAddress.value,
+      userAddress.value as `0x${string}`,
       CONTRACT_ADDRESSES.CONTRACT_ADDRESS as `0x${string}`
     ] : undefined,
     query: {
@@ -120,7 +135,7 @@ export function useTokenTransfer(): any {
 
   // 读取ETH余额
   const { data: ethBalance } = useBalance({
-    address: userAddress.value
+    address: userAddress.value as `0x${string}` | undefined
   })
 
   // 计算状态
