@@ -42,7 +42,7 @@ const appkit =  createAppKit({
   projectId,
   themeMode: 'light',
   features: {
-    connectMethodsOrder: ['email', 'social', 'wallet'],
+    connectMethodsOrder: ['wallet'],
     analytics: true, // Optional - defaults to your Cloud configuration
   },
   metadata: {
