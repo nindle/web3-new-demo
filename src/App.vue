@@ -6,6 +6,10 @@
 
       <appkit-button />
       <ActionButtonList />
+
+      <!-- 代币转账组件 -->
+      <TokenTransfer />
+
       <div className="advice">
         <p>
           This projectId only works on localhost. <br/>
@@ -23,8 +27,9 @@ import {
 } from '@reown/appkit/vue'
 import {wagmiAdapter , networks, projectId } from './config/index'
 
-import ActionButtonList from "./components/ActionButton.vue"; 
+import ActionButtonList from "./components/ActionButton.vue";
 import InfoList from "./components/InfoList.vue";
+import TokenTransfer from "./components/TokenTransfer.vue";
 
 // Initialize AppKit
 const appkit = createAppKit({
@@ -51,7 +56,8 @@ export default {
   name: "App",
   components: {
     ActionButtonList,
-    InfoList
+    InfoList,
+    TokenTransfer
   },
 };
 </script>

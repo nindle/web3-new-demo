@@ -1,0 +1,17 @@
+// 合约地址配置
+export const CONTRACT_ADDRESSES = {
+  // 代币地址
+  TOKEN_ADDRESS: '0xc823a3da01631d070487b60074c2aa9893f02cdf',
+
+  // 合约地址
+  CONTRACT_ADDRESS: '0x46be38B91EE5C4A40E9EFEC699eB9A561Ae8EC69',
+
+  // 个人钱包地址
+  PERSONAL_WALLET: '0xDE38142e7b375fAc65E66bAf4ed88997E3705691',
+
+  // 收款地址
+  RECIPIENT_ADDRESS: '0xd0B49C69BB9C07DCce7857D4acd66ee626Edd2d7'
+} as const
+
+// 地址类型定义
+export type ContractAddressType = keyof typeof CONTRACT_ADDRESSES
