@@ -26,7 +26,7 @@ This project is configured for automatic deployment to GitHub Pages.
 
 3. **Deploy:**
    - Push to `main` branch to trigger automatic deployment
-   - Your site will be available at: `https://[username].github.io/[repository-name]/`
+   - Your site will be available at: `https://nindle.github.io/web3-new-demo/`
 
 ### Manual Build
 
